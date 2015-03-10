@@ -4866,10 +4866,11 @@ void sofia_presence_handle_sip_i_message(int status,
 			}
 
 			if(auth_res != AUTH_OK) {
-			if (authorization) {
-				auth_res = sofia_reg_parse_auth(profile, authorization, sip, de,
+			if (authorization &&
+				(auth_res = sofia_reg_parse_auth(profile, authorization, sip, de,
 												(char *) sip->sip_request->rq_method_name, key, keylen, network_ip, network_port, NULL, 0,
-												REG_INVITE, NULL, NULL, NULL, NULL);
+												REG_INVITE, NULL, NULL, NULL, NULL)) == AUTH_OK) {
+				auth_res = AUTH_OK;
 			} else if( sofia_xml_cached_user(profile, sip, &v_event, NULL)) {
 				auth_res = AUTH_OK;
 			} else if( sofia_xml_blind_auth(profile, sip, &v_event, NULL, network_ip )) {
@@ -4935,6 +4936,7 @@ void sofia_presence_handle_sip_i_message(int status,
 			char *from_addr;
 			char *p;
 			char *full_from;
+			char header[256];
 			char proto[512] = SOFIA_CHAT_PROTO;
 
 			full_from = sip_header_as_string(nh->nh_home, (void *) sip->sip_from);
@@ -5022,6 +5024,24 @@ void sofia_presence_handle_sip_i_message(int status,
 					switch_event_header_t *hp;
 					for (hp = v_event->headers; hp; hp = hp->next) {
 						switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, hp->name, hp->value);
+					}
+				}
+
+				for (un = sip->sip_unknown; un; un = un->un_next) {
+					if (!strncasecmp(un->un_name, "X-", 2)) {
+						if (!zstr(un->un_value)) {
+							switch_snprintf(header, sizeof(header), "variable_sip_h_%s", un->un_name);
+							switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG10, "adding %s => %s to xml_curl request\n", un->un_name, un->un_value);
+							switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, header, un->un_value);
+						}
+					} else if (!strncasecmp(un->un_name, "P-", 2)) {
+			                         if (!zstr(un->un_value)) {
+ 							switch_snprintf(header, sizeof(header), "variable_sip_h_%s", un->un_name);
+							switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG10, "adding %s => %s to xml_curl request\n", un->un_name, un->un_value);
+							switch_event_add_header_string(event, SWITCH_STACK_BOTTOM, header, un->un_value);
+						    }
+					} else {
+						switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_DEBUG10, "skipping %s => %s from xml_curl request\n", un->un_name, un->un_value);
 					}
 				}
 
