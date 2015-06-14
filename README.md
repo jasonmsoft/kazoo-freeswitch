@@ -11,3 +11,6 @@ To learn more about FreeSWITCH visit their website at: http://www.freeswitch.org
 
 
 用于和kazoo配合的freeswitch版本,多了一个mod_kazoo模块
+
+freeswitch依赖的包:
+http://files.freeswitch.org/downloads/libs/
