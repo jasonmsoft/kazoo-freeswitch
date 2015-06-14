@@ -9,6 +9,5 @@ _If you are not using the Kazoo platform please use the offical FreeSWITCH repo 
 
 To learn more about FreeSWITCH visit their website at: http://www.freeswitch.org/
 
-To learn more about 2600hz visit: http://2600hz.com/
 
-To learn more about Kazoo visit:  http://wiki.2600hz.com/
+用于和kazoo配合的freeswitch版本,多了一个mod_kazoo模块
